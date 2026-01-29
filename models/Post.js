@@ -1,9 +1,7 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 
-const PostSchema = new mongoose.Schema({
-    title: String,
-    content: String,
-    date: { type: Date, default: Date.now }
-});
-
-module.exports = mongoose.model('Post', PostSchema);
+// Linkni .env faylidan olamiz, kod ichida ko'rinmaydi
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("Baza bilan aloqa o'rnatildi!"))
+  .catch(err => console.log(err));
