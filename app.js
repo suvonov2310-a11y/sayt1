@@ -1,59 +1,51 @@
 const express = require('express');
-const session = require('express-session');
 const mongoose = require('mongoose');
-const Post = require('./models/Post');
+const session = require('express-session');
 const app = express();
 
-// Ma'lumotlar bazasiga ulanish (MongoDB Atlas - Tekin)
-mongoose.connect('SIZNING_MONGODB_URL_MANZILINGIZ');
+// 1. Ma'lumotlar bazasi (MongoDB Atlas linkini bu yerga qo'ying)
+mongoose.connect('mongodb+srv://admin:parol123@cluster.mongodb.net/sayt1')
+    .then(() => console.log("Baza ulandi!"))
+    .catch(err => console.log("Xato:", err));
 
+// 2. Ma'lumot strukturasi (Model)
+const DataSchema = new mongoose.Schema({
+    name: String,
+    info: String,
+    date: { type: Date, default: Date.now }
+});
+const Data = mongoose.model('Data', DataSchema);
+
+// 3. Sozlamalar
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-    secret: 'maxfiy-kalit',
-    resave: false,
-    saveUninitialized: true
-}));
+app.use(session({ secret: 'maxfiy', resave: false, saveUninitialized: true }));
 
-// --- YO'LLARI (ROUTES) ---
-
-// 1. Hamma ko'ra oladigan asosiy sahifa
+// 4. Sahifalar (Routes)
 app.get('/', async (req, res) => {
-    const posts = await Post.find();
-    res.render('index', { posts, isAdmin: req.session.isLoggedIn });
+    const allData = await Data.find();
+    res.render('index', { allData, isAdmin: req.session.isAdmin });
 });
 
-// 2. Login sahifasi
 app.get('/login', (req, res) => res.render('login'));
+
 app.post('/login', (req, res) => {
-    const { password } = req.body;
-    if (password === 'admin123') { // Mana shu yerda parolni tekshiramiz
-        req.session.isLoggedIn = true;
-        res.redirect('/admin');
+    if (req.body.password === 'admin777') { // SIZNING PAROLINGIZ
+        req.session.isAdmin = true;
+        res.redirect('/');
     } else {
-        res.send('Xato parol!');
+        res.send("Xato parol!");
     }
 });
 
-// 3. Admin Panel (Faqat kodni bilganlar uchun)
-app.get('/admin', (req, res) => {
-    if (!req.session.isLoggedIn) return res.redirect('/login');
-    res.render('admin');
-});
-
-// 4. Ma'lumot qo'shish va o'chirish
 app.post('/add', async (req, res) => {
-    if (req.session.isLoggedIn) {
-        await new Post(req.body).save();
-    }
+    if (req.session.isAdmin) await new Data(req.body).save();
     res.redirect('/');
 });
 
 app.post('/delete/:id', async (req, res) => {
-    if (req.session.isLoggedIn) {
-        await Post.findByIdAndDelete(req.params.id);
-    }
+    if (req.session.isAdmin) await Data.findByIdAndDelete(req.params.id);
     res.redirect('/');
 });
 
-app.listen(3000, () => console.log('Server 3000-portda yonib turibdi...'));
+app.listen(3000, () => console.log('http://localhost:3000'));

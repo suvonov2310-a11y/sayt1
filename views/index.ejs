@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mukammal Tizim</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; }
+        .admin-box { background: #e3e3e3; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        input, button { padding: 10px; margin: 5px; }
+        .del-btn { background: red; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Ma'lumotlar Bazasi</h1>
+
+    <% if (isAdmin) { %>
+        <div class="admin-box">
+            <h3>Yangi ma'lumot qo'shish (Admin)</h3>
+            <form action="/add" method="POST">
+                <input type="text" name="name" placeholder="Nomi" required>
+                <input type="text" name="info" placeholder="Batafsil" required>
+                <button type="submit" style="background: green; color: white;">Saqlash</button>
+            </form>
+            <a href="/logout">Chiqish</a>
+        </div>
+    <% } else { %>
+        <a href="/login">Admin bo'lib kirish</a>
+    <% } %>
+
+    <hr>
+
+    <% allData.forEach(item => { %>
+        <div class="card">
+            <div>
+                <strong><%= item.name %></strong>: <%= item.info %>
+            </div>
+            <% if (isAdmin) { %>
+                <form action="/delete/<%= item._id %>" method="POST">
+                    <button class="del-btn">O'chirish</button>
+                </form>
+            <% } %>
+        </div>
+    <% }) %>
+</body>
+</html>
